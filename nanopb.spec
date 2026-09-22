@@ -66,4 +66,4 @@ Provides the protoc-gen-nanopb plugin.
 
 %changelog
 * Mon Sep 14 2026 Mritunjoy Das <mmritunj@qti.qualcomm.com> - 0.4.9.1-2
-- Initial RPM build for open source nanopb library
+- Initial RPM build for nanopb, imported from fedora nanopb package
