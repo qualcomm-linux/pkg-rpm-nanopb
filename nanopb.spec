@@ -3,87 +3,67 @@
 
 Name:           nanopb
 Version:        0.4.9.1
-Release:        %autorelease
-Summary:        Nanopb Protocol Buffers for Embedded Systems
-
-License:        zlib
+Release:        2%{?dist}
+Summary:        A small code-size Protocol Buffers implementation in ansi C
+License:        Zlib
 URL:            https://github.com/nanopb/nanopb
 Source0:        %{url}/archive/%{version}/%{prj_name}-%{version}.tar.gz
-
 ExclusiveArch:  %{arm64}
 
-BuildRequires:  python3
+BuildRequires:  gcc-c++
 BuildRequires:  cmake
-BuildRequires:  gcc
-BuildRequires:  make
-BuildRequires:  protobuf-compiler
+BuildRequires:  ninja-build
 BuildRequires:  protobuf-devel
+BuildRequires:  protobuf-compiler
+BuildRequires:  python3-devel
+BuildRequires:  python3-protobuf
 
 %description
-Nanopb is a small code-size Protocol Buffers implementation.
+Nanopb is a small code-size Protocol Buffers implementation in ansi C. It is
+especially suitable for use in microcontrollers, but fits any memory restricted
+system.
 
-%package devel
-Summary:  Nanopb development headers
-Requires: %{name} = %{version}-%{release}
+%package        devel
+Summary:        Development files for %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description devel
-Nanopb development headers and libraries.
+The %{name}-devel package contains libraries and header files for
+developing applications that use %{name}.
 
 %package generator
-Summary:  Nanopb protoc plugin
-Requires: python3
+Summary:        Nanopb protoc plugin
+Requires:       python3
+Requires:       python3-protobuf
 
 %description generator
 Provides the protoc-gen-nanopb plugin.
 
 %prep
-%autosetup -n nanopb
+%autosetup -n %{prj_name}-%{version}
 
 %build
-cmake . -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=ON
-make %{?_smp_mflags}
+%cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF
+%cmake_build
 
 %install
-make install DESTDIR=%{buildroot}
+%cmake_install
 
-# Install generator plugin
-mkdir -p %{buildroot}/usr/bin
-install -m 755 generator/protoc-gen-nanopb %{buildroot}/usr/bin/protoc-gen-nanopb
-
-# Manually create pkg-config file
-mkdir -p %{buildroot}%{_libdir}/pkgconfig
-cat > %{buildroot}%{_libdir}/pkgconfig/nanopb.pc << PCEOF
-prefix=/usr
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib64
-includedir=\${prefix}/include/nanopb
-
-Name: nanopb
-Description: Nanopb Protocol Buffers for Embedded Systems
-Version: 0.4.9.1
-Libs: -L\${libdir} -lprotobuf-nanopb
-Cflags: -I\${includedir}
-PCEOF
-
-# ── Base runtime package ──────────────────────────────────────
 %files
-%{_libdir}/libprotobuf-nanopb.so.*
+%license LICENSE.txt
+%doc README.md CHANGELOG.txt
+%{_libdir}/libprotobuf-nanopb.so.0
 
-# ── Devel package ─────────────────────────────────────────────
 %files devel
 %{_includedir}/nanopb/
 %{_libdir}/libprotobuf-nanopb.so
-%{_libdir}/libprotobuf-nanopb.a
-%{_libdir}/pkgconfig/nanopb.pc
 %{_libdir}/cmake/nanopb/
 
-# ── Generator package ─────────────────────────────────────────
 %files generator
-/usr/bin/protoc-gen-nanopb
-/usr/bin/nanopb_generator
-/usr/bin/nanopb_generator.py
-/usr/lib/python3.12/site-packages/nanopb/
+%{_bindir}/protoc-gen-nanopb
+%{_bindir}/nanopb_generator*
+%{python3_sitelib}/nanopb/
 
 %changelog
-* Mon Sep 14 2026 mmritunj@qti.qualcomm.com - 0.4.9.1-1
-- Initial RPM build
+* Mon Sep 14 2026 Mritunjoy Das <mmritunj@qti.qualcomm.com> - 0.4.9.1-2
+- Initial RPM build for open source nanopb library
